@@ -10,7 +10,8 @@ import { ProdutoService } from '../../services/domain/produto.service';
 })
 export class ProdutosPage {
 
-  items : ProdutoDTO[];
+  items : ProdutoDTO[] = [];
+  page : number = 0;
 
   constructor(public navCtrl: NavController, 
               public navParams: NavParams,
@@ -26,8 +27,9 @@ export class ProdutosPage {
     // pegando parametros qeu vem da pagina categorias
     let categoria_id = this.navParams.get('categoria_id');
     let loader = this.presentLoading();
-    this.produtoService.findByCategoria(categoria_id).subscribe(response => {
-      this.items = response['content'];
+    this.produtoService.findByCategoria(categoria_id, this.page, 10).subscribe(response => {
+      // concatena a lista atual com os novos itens da lista nova
+      this.items = this.items.concat(response['content']);
       loader.dismiss();
     }, 
     error => {
@@ -50,9 +52,22 @@ export class ProdutosPage {
   }
 
   doRefresh(refresher) {
+    this.page = 0;
+    this.items = [];
     this.loadData();
     setTimeout(() => {
       refresher.complete();
     }, 1000);
   }
+
+  doInfinite(infiniteScroll) {
+    this.page++;
+    this.loadData();
+    console.log(this.page);
+    console.log(this.items);
+    setTimeout(() => {
+      infiniteScroll.complete();
+    }, 1000);
+  }
+
 }
